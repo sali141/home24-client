@@ -4,12 +4,28 @@ body {
     'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  color : #2c3638;
+  font-size: 14px;
+}
+
+a {
+  text-decoration: none;
+  color : #2c3638;
+  transition: all ease .2s;
+}
+
+a:hover {
+  color : #f45334;
+}
+
+h1 {
+  font-size: 1.8em;
 }
 
 .page {
   display: grid;
-  grid-gap: 20px;
-  grid-template-columns: 160px auto auto;
+  grid-gap: 0;
+  grid-template-columns: 250px auto auto;
   grid-template-areas:
     'header header header'
     'sidebar content content'
@@ -21,38 +37,47 @@ body {
   padding: 10px;
 }
 
-.header {
-  grid-area: header;
-  background-color: lightblue;
-}
-
-.header input {
-  float: right;
-}
-
-.sidebar {
-  grid-area: sidebar;
-  background-color: lavender;
-}
-
-.sidebar ul {
-  list-style-type: none;
-  margin: 0;
-  padding: 0;
-}
-
-.sidebar ul li {
-  margin: 0 0 0 8px;
-  padding: 8px 0;
-}
-
 .content {
   grid-area: content;
   grid-column: span 2;
 }
 
-.footer {
-  grid-area: footer;
-  background-color: lightblue;
-  text-align: center;
+.error-msg {
+  color : #f45334;
+}
+
+.loading {
+  grid-area: content;
+  min-height: 80vh;
+}
+
+.page-link {
+  color :#2c3638;
+}
+
+.page-link:hover {
+  color : #f45334;
+}
+
+.page-item.active .page-link {
+  background-color : #f45334;
+  border-color : #f45334;
+}
+
+.page-item.active .page-link:hover {
+  background-color : #f5674c;
+  border-color : #f5674c;
+}
+
+@media screen and (max-width: 480px) {
+  .page {
+    display: grid;
+    grid-gap: 0;
+    grid-template-columns: auto auto auto;
+    grid-template-areas:
+      'header header header'
+      'content content content'
+      'footer footer footer';
+    margin: 6px;
+  }
 }

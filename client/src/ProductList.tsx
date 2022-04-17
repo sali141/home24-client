@@ -1,136 +1,87 @@
 import React from 'react';
-
-import { Category, Article } from './types';
+import ArticleCard from './components/ArticleCard/ArticleCard';
+import { intlCategoryID } from './constants/commonConst';
 import './ProductList.css';
+import Sidebar from './shared/Sidebar/Sidebar';
+import { Article, Category } from './types';
+import { getCategories } from './utils/apiUtils';
+import loading from './assets/img/loading.gif';
+import Pagination from 'react-responsive-pagination';
 
-var intlNumberFormatValues = ['de-DE', 'currency', 'EUR'];
-
-export var formatter = new Intl.NumberFormat(intlNumberFormatValues[0], {
-  style: intlNumberFormatValues[1],
-  currency: intlNumberFormatValues[2],
-});
+type Props = {
+  searchText: string;
+};
 
 type State = {
   categories: Category[];
+  articles: Article[];
+  currentPage: number;
+  totalPages: number;
+  itemsPerPage: number;
 };
 
-export var ArticleCard = ({ article }: { article: Article }) => {
-  return (
-    <div className={'article'}>
-      <img src={article.images[0].path} />
-      <div>{article.name}</div>
-      <div>{formatter.format(article.prices.regular.value / 100)}</div>
-      <section role="button">Add to cart</section>
-    </div>
-  )
-};
-
-class ArticleList extends React.Component {
+class ProductList extends React.Component<Props, State> {
   state: State = {
     categories: [],
+    articles: [],
+    currentPage: 1,
+    totalPages: 0,
+    itemsPerPage: 8,
   };
 
   componentDidMount() {
-    var xhr = new XMLHttpRequest();
+    getCategories(intlCategoryID).then((response) => {
+      const totalPages = Math.floor(response[0].categoryArticles.articles.length / this.state.itemsPerPage);
+      this.setState({ categories: response, articles: response[0].categoryArticles.articles, totalPages: totalPages });
+    });
+  }
 
-    xhr.open('POST', '/graphql');
-    xhr.setRequestHeader('Content-Type', 'application/json');
-
-    xhr.send(JSON.stringify({
-      query: `{
-        categories(ids: "156126", locale: de_DE) {
-          name
-          articleCount
-          childrenCategories {
-            name
-            urlPath
-          }
-          categoryArticles(first: 50) {
-            articles {
-              name
-              variantName
-              prices {
-                currency
-                regular {
-                  value
-                }
-              }
-              images(
-                format: WEBP
-                maxWidth: 200
-                maxHeight: 200
-                limit: 1
-              ) {
-                path
-              }
-            }
-          }
-        }
-      }`,
-    }));
-
-    xhr.onload = () => {
-      if (xhr.status === 200) {
-        var response = JSON.parse(xhr.response);
-
-        this.setState({ categories: response.data.categories });
+  componentDidUpdate(prevProps: Props) {
+    if (prevProps.searchText !== this.props.searchText) {
+      if (this.props.searchText.length > 1) {
+        console.log(this.state.articles)
+        const filteredArticles = this.state.articles.filter((a) => a.name.includes(this.props.searchText));
+        this.setState({ articles: filteredArticles });
+      } else {
+        this.setState({ articles: this.state.categories[0].categoryArticles.articles });
       }
     }
   }
 
+  setCurrentPage = (e: number) => {
+    this.setState({ currentPage: e });
+  };
+
   render() {
-    var articles = this.state.categories.map((category) => {
-      return category.categoryArticles.articles.map((article) => {
-        return <ArticleCard article={article} />;
-      });
-    });
+    const { currentPage, itemsPerPage, totalPages, articles, categories } = this.state;
+    let items = (this.props.searchText.length > 1) ? articles : articles.slice(currentPage * itemsPerPage, (currentPage + 1) * itemsPerPage);;
 
-    return (
-      <div className={'page'}>
-        <div className={'header'}>
-          <strong>home24</strong>
-          <input placeholder={'Search'} />
-        </div>
-
-        <div className={'sidebar'}>
-          <h3>Kategorien</h3>
-          {this.state.categories.length ? (
-            <ul>
-              {this.state.categories[0].childrenCategories.map(({ name, urlPath }) => {
-                return (
-                  <li>
-                    <a href={`/${urlPath}`}>{name}</a>
-                  </li>
-                );
-              })}
-            </ul>
-          ) : (
-            'Loading...'
-          )}
-        </div>
-
+    return categories.length ? (
+      <>
+        <Sidebar childrenCategories={categories[0].childrenCategories} />
         <div className={'content'}>
-          {this.state.categories.length ? (
-            <h1>
-              {this.state.categories[0].name}
-              <small> ({this.state.categories[0].articleCount})</small>
-            </h1>
-          ) : (
-            'Loading...'
-          )}
-          <div className={'articles'}>{articles}</div>
-        </div>
+          <h1>
+            {this.state.categories[0].name}
+            <small> ({categories[0].articleCount})</small>
+            {this.props.searchText.length > 1 && <em>Filtered by : {this.props.searchText}</em>}
+          </h1>
 
-        <div className={'footer'}>
-          Alle Preise sind in Euro (€) inkl. gesetzlicher Umsatzsteuer und Versandkosten.
+          <div className={'articles'}>
+            {items.length ? (
+              items.map((article, index) => <ArticleCard key={index} article={article} />)
+            ) : (
+              <div className="error-msg">No matching records found</div>
+            )}
+          </div>
+          {this.props.searchText.length === 0 && items.length && <Pagination current={currentPage} total={totalPages} onPageChange={this.setCurrentPage} />}
         </div>
+      </>
+    ) : (
+      <div className={'loading'}>
+        <img src={loading} alt="loading" />
       </div>
     );
   }
 }
 
-var PLP = () => {
-  return <ArticleList />;
-};
-
-export default PLP;
+export default ProductList;

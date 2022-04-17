@@ -1,0 +1,39 @@
+.article {
+  border: 1px solid lavenderblush;
+  padding: 10px;
+  border-radius: 5px;
+  text-align: center;
+}
+
+.article > * {
+  display: inline-block;
+  padding: 4px 0;
+  margin: 4px 0;
+  width: 100%;
+  text-align: center;
+}
+
+.article > section[role='button'] {
+  background-color: #2c3638;
+  color: #fff;
+  cursor: pointer;
+  text-align: center;
+  padding: 10px 9px;
+  border-radius: 5px;
+  width: 80%;
+  transition: all ease .2s;
+}
+
+.article > section[role='button']:hover {
+  background-color: #787d80;
+}
+
+.article .article-price {
+  font-size: 1.6em;
+}
+
+@media screen and (max-width: 480px) {
+  .article img {
+    width: 80% !important;
+  }
+}
