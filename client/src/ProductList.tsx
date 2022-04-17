@@ -39,7 +39,6 @@ class ProductList extends React.Component<Props, State> {
   componentDidUpdate(prevProps: Props) {
     if (prevProps.searchText !== this.props.searchText) {
       if (this.props.searchText.length > 1) {
-        console.log(this.state.articles)
         const filteredArticles = this.state.articles.filter((a) => a.name.includes(this.props.searchText));
         this.setState({ articles: filteredArticles });
       } else {
